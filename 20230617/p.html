@@ -1,0 +1,1041 @@
+<!doctype html>
+<html lang="jp">
+
+    <head>
+		<meta charset="utf-8">
+		<title>後退解析</title>
+
+		<meta name="description" content="A framework for easily creating beautiful presentations using HTML">
+		<meta name="author" content="Hakim El Hattab">
+
+		<meta name="apple-mobile-web-app-capable" content="yes">
+		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+		<link rel="stylesheet" href="dist/reset.css">
+		<link rel="stylesheet" href="dist/reveal.css">
+		<link rel="stylesheet" href="dist/theme/black.css" id="theme">
+        <script type="text/javascript" async 
+	        src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML">
+	    </script>
+		<!-- Theme used for syntax highlighting of code -->
+		<link rel="stylesheet" href="plugin/highlight/monokai.css">
+	</head>
+
+	<body>
+
+		<div class="reveal">
+
+			<!-- Any section element inside of this container is displayed as a slide -->
+			<div class="slides">
+				<section>
+					<a href="https://revealjs.com">
+					</a>
+					<h3>限界！アルゴリズム　後退解析</h3>
+					<h4>17. June 2023</h4>
+					<p>
+						<small>Created by ももも  <a href="https://twitter.com/momomorgentau">@momomorgentau</a></small>
+					</p>
+				</section>
+
+				<section>
+					<h2>はじめに</h2>
+					<font size=6>
+					    AtCoderの問題で時々ありますよね<br>
+					<h3>高橋君と青木君が対決するやつ</h3>
+					<p>今日は対決シリーズのうちの１つである後退解析というアルゴリズムについてお話していきます。
+					これ系の問題で大変困るのが <br><font size=10>最善な行動</font> <br>という悪魔の言葉です。<br>
+					この点に関して詳しく説明出来ればと思います。</p>
+				    </font>
+				</section>
+
+                <section>
+				    <h2>アジェンダ</h2>
+					<p>背景説明<br>
+					問題紹介<br>
+					アルゴリズム説明<br>
+					問題解説<br>
+					おわりに</p>
+				</section>
+
+				<section>
+				    <h2>背景説明</h2>
+					<p>まずはアルゴリズムの説明を始める前に<br>近年耳にしない日はない<br><font size=10>AI</font><br>に関して
+					さらっとお話しさせてください。</p>
+				</section>
+
+				<section>
+				    <h2>近年の "AI" に関して</h2>
+					<p><font size=6>最近は"お絵かき"のAIが非常に注目されていますが、もう少し前に遡ってみると
+					囲碁や将棋のAIが世間を騒がしていました。</font></p>
+					<h4>囲碁 Alpha Go (2015)</h4>
+					<h4>将棋 水匠 (2022)</h4>
+				    <p><font size=6>これらのAIがプロの棋士と対決するニュースを目にします</font></p>
+				</section>
+				<section>
+					<p><font size=6>将棋電王戦の結果は</font></p>
+					<h3>14勝5敗1分</h3>
+					<p><font size=6>らしいです。(AI側の成績です)<br>
+					確かに強いですが 絶対最強！ ではないですね。</font></p>
+					<blockquote>
+					  <font size=5>将棋電王戦（しょうぎでんおうせん）[注 1]とは、ドワンゴが主催するプロ棋士とコンピュータ将棋ソフトウェアとの非公式棋戦である。
+					  映像メディアが主催する棋戦としてニコニコ生放送による中継と、対局者やソフトウェア開発者などをフィーチャーした事前PVが特徴。【wikipedia】
+					  </font>
+						  </blockquote>
+				</section>
+				
+				<section>
+					<p>学習の問題点</p>
+					<h3>複雑でパターンが非常に多い</h3>
+					<p>将棋：10<sup>60</sup>  10<sup>220</sup></p>
+					<font size=4><a href="https://www.nara-wu.ac.jp/math/personal/shinoda/legal.pdf">詳しい方いらっしゃいましたら教えてください</a>(文献)</font><br>
+					<font size=6>AtCoderにて解いている問題<br>
+					10<sup>7</sup>、10<sup>8</sup><br>
+					これで2秒ほど計算時間がかかるので、単純計算で、、、<br>
+				    とにかくとんでもない時間かかかります。</font>
+				</section>
+
+				<section>
+					<font size=6>そのため、
+					<h3>理論的に絶対に勝てる選択</h3>
+					<p>ではなくて、少しだけ妥協しまして</p>
+					<h3>絶対ではないけど結構強いよ</h3>
+					<p>という選択を学習していきます</p>
+
+					<p>ということで人間相手にも負けることがあるわけです</p>
+				    </font>
+				</section>
+
+				
+				<section>
+					<h3>裏を返してみます</h3>
+					<font size=6>繰返しにはなりますが
+                    <p>学習の問題点</p>
+					<h3>複雑でパターンが非常に多い</h3>
+					<p>ということは、、</p>
+					<h3>そんなに複雑でなくパターンが少ない</h3>
+					<p>場合であれば、適切なアルゴリズムを使えば絶対に勝てる手を求められるということです。</p>
+				</font>
+                </section>
+				<section>
+				    <h3>適切なアルゴリズムって？</h3>
+					<font size=6>問題によって様々ありますが、本発表では</font><br>
+					<h4>後退解析</h4>
+					<font size=6>を紹介していきます。通常の将棋を縮小した「どうぶつ将棋」の最適解を求められる方法としても知られています。</font><br>
+					<font size=5>その他にも「Grundy数」も有名ですね。時々ABCでも出題されています。</font>
+				</section>
+
+				<section>
+				    <h1>問題紹介</h1>
+					<p>本発表で扱う問題を紹介します。<br>
+					聴講者がこの問題を解けるようになることが今回の目標です。
+					黄色の問題ですので心して聞いてください。</p>
+				</section>
+
+				<section>    
+				    <p><font size=8><a href="https://atcoder.jp/contests/abc209/tasks/abc209_e">ABC209 E-Shiritori</a></font></p>
+					<p style="text-align:left"><font size=5><div style="line-height:0.7;">
+					高橋辞書には <em>N</em> 個の単語が載っており、
+					<em>i</em> ( 1 ≤ <em> i </em> ≤ <em>N</em> ) 番目の単語は <em>s<sub>i</sub></em> です。<br>
+				    高橋君と青木君は高橋辞書を使って３しりとりをします。
+					３しりとりのルールは以下です。<br>
+					<ul><div style="line-height:1.5">
+					    <li>高橋君と青木君は、高橋君から始めて交互に単語を言い合っていく。</li>
+					    <li>各プレーヤーは前の人が言った単語の最後の３文字で始まる単語を言わなければならない。
+						例えば、前の人が Takahashi と言った場合、次の人は ship、shield などを言うことができ、
+						Aoki、sing、his などを言うことはできない。</li>
+					    <li>大文字と小文字は区別される。例えば Takahashi のあとに ShIp を言うことはできない。</li>
+					    <li>言う単語がなくなったほうが負ける。</li>
+						<li>高橋辞書に載っていない単語をいうことはできない。</li>
+					    <li>同じ単語は何度でも使ってよい。</li>
+					  </div></ul>
+					  各 <em>i</em> ( 1 ≤ <em> i </em> ≤ <em>N</em> ) について高橋君が３しりとりを単語 <em>s<sub>i</sub></em> 
+					  から始めたときどちらが勝つかを判定してください。ただし、二人とも最善に行動するとします。
+					  具体的には、自分が負けないことを最優先し、その次に相手を負かすことを優先します。
+					</div></font></p>
+				</section>
+				<section>	    
+			        <p><font size=10>制約</font></p>
+					<p><font size=5>
+                        <ul>
+						    <li><em>N</em> は 2×10<sup>5</sup> 以下の整数</li>
+						    <li><em>s<sub>i</sub></em> は英小文字と英大文字のみからなる長さ３以上８以下の文字列</li>
+						</ul>
+					</font></p>
+			        <p><font size=10>出力</font></p>
+					<p><font size=5><div style="line-height:0.7">
+					    <em>N</em> 行出力せよ。	<em>i</em> ( 1 ≤ <em> i </em> ≤ <em>N</em> ) 
+						行目には、３しりとりを単語 <em>s<sub>i</sub></em> から始めたとき、
+						高橋くんが勝つなら Takahashi 、青木君が勝つなら Aoki 、しりとりが永遠に続き勝敗が決まらないなら
+						Draw と出力せよ。
+					</div></font></p>
+			    </section>	
+				<section>
+				    <h3>入力例を見ていきます</h3>
+					<h4>入力例１</h4>
+					<p><font size=6>3</font></p>
+					<p><font size=6>abcd</font></p>
+					<p><font size=6>bcda</font></p>
+					<p><font size=6>ada</font></p>
+				</section>
+				<section>
+				    <p>abcd</p>
+				 	<img src="images/0_0.png" alt="0_0" width="70%" height="70%"/>
+
+					<p>青木君の勝ち</p>
+				</section>
+
+				<section>
+				    <p>bcda</p>
+				 	<img src="images/0_1.png" alt="0_0" width="70%" height="70%"/>
+					<p>高橋君の勝ち</p>
+				</section>
+
+				<section>
+				    <p>ada</p>
+				 	<img src="images/0_2.png" alt="0_0" width="70%" height="70%"/>
+					<p>引き分け</p>
+				</section>
+				<section>
+				    <p><font size=6>
+					こんな感じでどちらが勝つかを判定する問題です<br>
+                    今回の例であれば簡単に求めることができますが、制約を見ると<br><br>
+				    <font size=10> <em>N</em> は 2*10<sup>5</sup> 以下の整数</font><br><br>
+					となっております。ざっと、20万単語あります。<br>
+					これを全部試していくのはなかなかに大変ですね。
+					</font></p>
+				</section>
+				<section>
+				    <p><font size=6>
+					    どちらが勝つかを効率よく求めたいのですが、<br>
+						ここで問題となるのはこの一言です。
+                   </font> </p>
+				   
+						<h4>
+						ただし、二人とも最善に行動するとします。<br>
+						具体的には、自分が負けないことを最優先し、<br>
+						その次に相手を負かすことを優先します。
+						</h4>
+                     <p><font size=6>
+					    
+						自分が負けないことってどうするの？<br>
+						どうすれば相手を負かす選択になるの？<br>	
+					</font></p>
+				</section>
+				<section>
+				    <h2>アルゴリズム説明</h2>
+					<p>最善に行動する<br>
+                       ということについて説明をしていきます。<br>
+					   一見難しそうですが、当たり前じゃん、という小さな気づきを積み上げていきます。
+					</p>
+				</section>
+
+				<section>
+				    <p>説明の都合上<br>
+					２つほど正しくないことを言いながら進めます<br>
+					後程、訂正しますので何卒ご容赦ください</p>
+				</section>
+				<section>
+				    <font size=6>先ほどの問題は一旦置いときます<br>
+					いきなりですが、簡単なゲームをしましょう<br>
+					あなたは次の３つから好きな手を選べます<br><br>
+                    <ul>
+					    <li>この手を選ぶとあなたは勝ちます</li>
+						<li>この手を選ぶとあなたは負けます</li>
+						<li>この手を選ぶと引き分けになります</li>
+					</ul>
+					<br><br>
+					どの手を選びますか？</font>
+				</section>
+				<section>
+				    <font size=6>この場合には<br><br>
+					<h3>この手を選ぶとあなたは勝ちます</h3>
+					を選ぶと無事に勝利することができます。<br>
+					とっても簡単ですね。
+					</font>
+				</section>
+				<section>
+				    <font size=6>続いて、、この場合はどうでしょうか<br><br>
+                    <ul>
+					    <li>この手を選ぶとあなたは負けます</li>
+						<li>この手を選ぶとあなたは負けます</li>
+						<li>この手を選ぶと引き分けになります</li>
+					</ul>
+					</font>
+                </section>
+				<section>
+				    <font size=6>この場合には<br><br>
+					<h3>この手を選ぶと引き分けになります</h3><br>
+					を選ぶかと思います。どうしても勝てないのはしょうがないですが、負けは嫌ですもんね。<br>
+					苦肉の策とでもいいましょうか。
+					</font>
+				</section>
+				<section>
+				   
+				    <font size=6>最後です、もう１つだけお付き合いください<br><br>
+                    <ul>
+					    <li>この手を選ぶとあなたは負けます</li>
+						<li>この手を選ぶとあなたは負けます</li>
+						<li>この手を選ぶとあなたは負けます</li>
+					</ul><br>
+					</font>
+                </section>
+				<section>
+				    <font size=6>最悪な状況ですね。この場合には<br><br>
+					<h3>この手を選ぶとあなたは負けます</h3><br>
+					を"選ぶしかない"という表現が適切でしょうか。<br>
+					悔しいですが何をやっても勝てません。敗北を受け入れましょう。
+					</font>
+				</section>
+				<section>
+				    
+					    まとめてみます
+					<br><br>
+					<font size=6>
+					<ul>
+					    <li>勝ちが1つでもある：勝ち</li>
+						<li>勝ちが無く引き分けがある：引き分け</li>
+						<li>負けしかない：負け</li>
+					</ul>
+					<br><br>
+					優先したい手が１つでもあればそれを選ぶ<br>
+					と考えると分かりやすいかもしれないです。
+					</font>
+				</section>
+				<section>
+				    <p>ここまで理解できたでしょうか？<br>
+					この時点で後退解析の８割は理解できたといっても過言ではありません。
+					蓋を開けてみればとても単純です。
+					</p>
+				</section>
+				<section>
+				    <font size=6>
+					説明してきましたが、よくよく考えると少しだけおかしいです    
+					</font>
+					<h3>ここで訂正１です</h3>
+					<font size=6>実際の問題では高橋君と青木君の２人で行われているため<br>
+					毎回ターンが入れ替わります。<br>
+					そのため勝ち負けの条件が少し変わります<br>
+					</font>
+					<font size=4>それらを含めて勝ち、負けを定義すれば正しいと言えなくもないのですが、、</font>
+				</section>
+				<section>
+					<font size=6>条件を考えるポイントは</font><br><br>
+					<h3>相手にその選択肢を押し付ける</h3><br>
+					<font size=6>ということです。</font>
+				</section>
+				<section>
+				    <font size=6>少しだけ言い回しを変えます<br>
+					この場合にはどれを選べばいいでしょうか<br>
+				    <br>
+					<ul>
+					    <li>この状態になると勝ちです</li>
+						<li>この状態になると負けです</li>
+						<li>この状態になると引き分けです</li>
+					</ul>
+					<br><br>
+					ポイントは選んだ手番は相手になるということです。</font>
+				</section>
+				<section>
+				    <font size=6>
+					    この場合には
+					<br><br>
+					<h3>この状態になると負けです</h3>
+					<br>を選ぶと勝てますね。
+					<br>負けが決定している手を押し付けちゃいました。<br></font>
+				 	<img src="images/2_0.png" alt="2_0" width="50%" height="50%"/>
+				</section>
+				
+				<section>
+				    <font size=6>もう一つ考えてみます<br>
+					今度はどうでしょうか？<br>
+					<br>
+					<ul>
+					    <li>この状態になると勝ちです</li>
+						<li>この状態になると勝ちです</li>
+						<li>この状態になると勝ちです</li>
+					</ul>
+					</font>
+				</section>
+				<section>
+				    <font size=6>この場合は選択肢はありませんね<br><br>
+					<h3>この状態になると勝ちです</h3>
+					しかありません。
+					<br>次のターンは相手の番ですので、勝利するのは相手です。<br>
+					残念なら負けてしまいました。<br>
+					</font>
+				 	<img src="images/2_1.png" alt="2_1" width="50%" height="50%"/>
+				</section>
+				<section>
+                    <font size=6>では「引き分け」はどうなるのでしょうか？<br>
+					今までは<br>
+					勝ちが無く引き分けが１つ以上ある<br>
+					と説明しました。が、、
+					</font>
+				</section>
+				<section>
+					<h3>ここで訂正２です</h3>
+					<font size=6>「引き分け」は<br>
+                    「勝ち」でも「負け」でもない<br>
+					状態です。少しばかり漠然としていますが、<br>
+					納得していただけるでしょうか？
+					</font>
+				</section>
+				<section>
+
+				    <font size=6>再度まとめてみます<br>
+					<br>
+					<ul>
+					    <li>１つでも負けの状態を選択可能：勝ち</li>
+					    <li>勝ちの状態のみ選択可能：負け</li>
+					    <li>勝ち、負けのどちらでもない：引き分け</li>
+					</ul>
+					    <br><br>
+						以上の条件が正しい条件です。以降はこれを元に考えていきます。
+					</font>
+				</section>
+
+				<section>
+				    <p>以下の遷移をするゲームを考えてみます</p>
+					<p><font size=5><div style="line-height:0.7;">いきなり、<br>ゲーム？グラフ？<br>となる方がいらっしゃるかもしれないですが、<br>
+					   問題をグラフにするのは後程にしますので「こういうものがあるんだな」で大丈夫です。 
+					<div></font></p>
+				 	<img src="images/1_0.png" alt="0_0" width="50%" height="50%"/>
+				</section>
+				<section>
+				    <font size=6>
+					    まず終点の状態は負けになります。<br>
+						これ以上先はないのでしょうがないですね<br>
+				 	<img src="images/1_1.png" alt="0_0" width="50%" height="50%"/>
+					</font>
+				</section>
+				<section>
+				    <font size=6>
+					    次に終点に向かう頂点を考えます。<br>
+						終点は 
+						<font size=7>負け</font>
+						 が決まってますので、<br>
+						 終点に向かう頂点は
+						 <font size=7>勝ち</font>
+						 となることが分かります。<br>
+				 	<img src="images/1_2.png" alt="0_0" width="50%" height="50%"/>
+					</font>
+				</section>
+				<section>
+				    <font size=6>もう一つだけ見ていきます<br>
+					   該当の頂点は先ほどの<font size=7> 勝ち </font>の頂点にしか遷移できません。<br>
+					   つまり相手に <font size=7>勝ち </font>の手番を渡すしか選択できません。<br>
+					   残念ながらこの頂点は<font size=7> 負け </font>になってしまいました。<br>
+					</font>
+				 	<img src="images/1_3.png" alt="0_0" width="50%" height="50%"/>
+				</section>
+				<section>
+				    <font size=6>また現段階で判断できない場合には後回しにしておきましょう。<br>
+					他の頂点を決定していくと<br>
+					いつの間にか決まっているかもしれません。<br>
+					<br>
+					
+					<font size=5>具体的には、、<br></font>
+					<font size=7> 負け </font>には遷移できないけど、まだ選択の余地がある場合
+					</font>
+				</section>
+				<section>
+				    <p>
+					    こんな感じで最後まで決めていきます
+					</p>
+				 	<img src="images/1_4.png" alt="0_0" width="50%" height="50%"/>
+				</section>
+				<section>
+				    <p>
+					    最後まで決まらなかった頂点は<br><font size=7> 引き分け </font>ということにして探索終了です。<br>
+				    </p>
+				 	<img src="images/1_5.png" alt="0_0" width="50%" height="50%"/>
+				</section>
+				<section>
+				    <p>
+						各状態の<br>「勝ち」「負け」「引き分け」<br>を求めることができました。
+					</p>
+
+					<p>以上が後退解析の説明となります。</p>
+				</section>
+				<section>
+				    <h2>問題解説</h2>
+					<p>後退解析を使って先ほどの問題を実際に解いていきます。</p>
+				</section>
+				<section>
+				    <p> ルールに従って単語をつなげます<br>
+					<font size=6>
+					高橋君が<br>
+					abcd<br>
+				    と言った場合、青木君は<br>
+					bcd<br>
+					から始まる単語を言わなければなりません
+					</font></p>
+				</section>
+				<section>
+				    <font size=6>
+					    青木君は bcd から始まる単語<br>
+						bcda<br>
+						を言いますので、次に高橋君は<br>
+						cda<br>
+						から始まる単語をいいます<br>
+					</font>
+					<font size=5>が、そんな単語はありませんので高橋君の負けとなります</font>
+				</section>
+				<section>
+				    先ほどの流れは以下のようになります
+
+				 	<img src="images/3_0.png" alt="3_0" width="50%" height="50%"/>
+				</section>
+				<section>
+				    <p>先ほどと同じ状態が作れるのであれば<br>単語は何でも大丈夫です</p>
+				 	<img src="images/3_1.png" alt="3_1" width="50%" height="50%"/>
+			    	<font size=6>
+					<ul>
+					    <li>同じ単語は何回でも使ってよい</li>
+					</ul>
+					<br>
+					そのため各単語の前後3文字だけ分かればよいです</font>
+				</section>
+				<section>
+				    入力例のグラフ<br>
+
+				 	<img src="images/3_2.png" alt="3_0" width="50%" height="50%"/>
+				    <p>先ほどと同様に後退解析によって勝敗を考えていきましょう</p>
+				</section>
+				<section>
+				    <h3>実装のポイント</h3>
+					<p>各頂点の持つ選択肢の数<br></p>
+					に注目してあげるといい感じに実装できます。<br>
+					<br>
+					<font size=6>判断ができない場合には後回しにしてましたよね<br>
+					そのため選択肢の数（出次数）が 0 の頂点に注目するわけです</font>
+				</section>
+				<section>
+				    <p>選択肢の数（出次数）に注目したグラフ</p>
+				 	<img src="images/4_0.png" alt="4_0" width="50%" height="50%"/>
+				</section>
+				<section>
+				    <p>終点＝出次数が 0  は負けです</p>
+				 	<img src="images/4_1.png" alt="4_1" width="50%" height="50%"/>
+					<br>
+				    <font size=6>このときに繋がっている頂点の出次数を1つ減らします</font>
+				</section>
+				<section>
+				    <p>負けに遷移できる頂点は勝ちです</p>
+				 	<img src="images/4_2.png" alt="4_2" width="50%" height="50%"/>
+					<br>
+				    <font size=6>ここ出次数関係ないです。すみません</font>
+				</section>
+				<section>
+				    <p>出次数が 0  の頂点が誕生しました<br>これを負けとします</p>
+				 	<img src="images/4_3.png" alt="4_3" width="50%" height="50%"/>
+					<br>
+				    <font size=6>このとき繋がっている頂点の出次数を1つ減らします<br></font>
+				</section>
+				<section>
+				    <p>操作を行えなくなるまでこれを繰り返します</p>
+				 	<img src="images/4_4.png" alt="4_4" width="50%" height="50%"/>
+					<br>
+				</section>
+				<section>
+				    実装<br>
+					<ul>
+						<li><a href="https://github.com/momomorgentau/materials/blob/main/20230617/abc206e.cpp">C++</a></li>
+						<li><a href="https://github.com/momomorgentau/materials/blob/main/20230617/abc206e.py">python</a></li>
+					</ul>
+				</section>
+                <section>
+				    計算量<br>
+					<font size=6>実装のポイントでお話しましたが本問題は<br>
+					<font size=10>選択肢の数（出次数）</font><br>
+					を減らすように更新を行いました。<br>
+					更新が行われるのは辺で繋がっている箇所ですね。<br>
+					しかも更新は１つの辺につき高々１回となります。<br>
+					<br>
+					また、辺の数は単語数 <em>N</em> ≤ 2*10<sup>5</sup> で抑えることができます<br>
+					（各単語の前 3 文字と後ろ 3 文字に辺を貼りました）<br>
+					</font>
+				</section>
+				<section>
+				<font size=6>
+				    頂点数にも注目しておきます<br>
+                    本問題では単語の <font size=10>前後 3 文字</font>に注目しました<br>
+					
+					<br>
+					そのため、取りえる状況は実は余り多くありません。<br>
+					文字の種類数：英小文字と英大文字　52種<br>
+					文字数：3文字<br>
+					<br>
+					52*52*52=140608 <br>
+					です。1.5*10<sup>5</sup> ぐらいですね<br>
+
+				</font>
+				</section>
+				<section>
+				    <h2>おわりに</h2>
+				</section>
+
+				<section>
+				    <font size=6>
+				    後退解析<br>
+					のアルゴリズムを使って問題を解いてみました。<br>
+					どうでしたでしょうか？我々の頭を悩ませる<br><br>
+					<h3>最善な行動を取る</h3>
+					の気持ちは少しは理解できたでしょうか？<br>
+					</font>
+				</section>
+				<section>
+				    <font size=6>
+				    一見難しそうな内容でも、その内容を覗いてみると<br>
+					簡単、単純、当たり前<br>
+					の組み合わせだったりします。<br>
+					アルゴリズムのとっても面白いところですね
+				    </font>
+				</section>
+				<section>
+					<h3>参考</h3>
+					<font size=10><a href="https://qiita.com/drken/items/4e1bcf8413af16cb62da">ゲームを解く！Educational DP Contest K, L 問題の解説</a>
+					</font>
+					<br>
+					<font size=6>類題はこちらに載っております</font><br>
+					<font size=6>けんちょんさんいつもお世話になっております</font>
+				</section>
+				<section>
+				    長時間のご清聴ありがとうございました
+				</section>
+			  <style>/*
+			   <!-- Example of nested vertical slides -->
+				<section>
+					<section>
+						<h2>Vertical Slides</h2>
+						<p>Slides can be nested inside of each other.</p>
+						<p>Use the <em>Space</em> key to navigate through all slides.</p>
+						<br>
+						<a href="#/2/1" class="navigate-down">
+							<img class="r-frame" style="background: rgba(255,255,255,0.1);" width="178" height="238" data-src="https://static.slid.es/reveal/arrow.png" alt="Down arrow">
+						</a>
+					</section>
+					<section>
+						<h2>Basement Level 1</h2>
+						<p>Nested slides are useful for adding additional detail underneath a high level horizontal slide.</p>
+					</section>
+					<section>
+						<h2>Basement Level 2</h2>
+						<p>That's it, time to go back up.</p>
+						<br>
+						<a href="#/2">
+							<img class="r-frame" style="background: rgba(255,255,255,0.1); transform: rotate(180deg);" width="178" height="238" data-src="https://static.slid.es/reveal/arrow.png" alt="Up arrow">
+						</a>
+					</section>
+				</section>
+
+				<section>
+					<h2>Slides</h2>
+					<p>
+						Not a coder? Not a problem. There's a fully-featured visual editor for authoring these, try it out at <a href="https://slides.com" target="_blank">https://slides.com</a>.
+					</p>
+				</section>
+
+				<section data-visibility="hidden">
+					<h2>Hidden Slides</h2>
+					<p>
+						This slide is visible in the source, but hidden when the presentation is viewed. You can show all hidden slides by setting the `showHiddenSlides` config option to `true`.
+					</p>
+				</section>
+
+				<section data-auto-animate>
+					<h2 data-id="code-title">Pretty Code</h2>
+					<pre data-id="code-animation"><code class="hljs javascript" data-trim data-line-numbers>
+						import React, { useState } from 'react';
+
+						function Example() {
+						  const [count, setCount] = useState(0);
+
+						  return (
+						    ...
+						  );
+						}
+					</code></pre>
+					<p>Code syntax highlighting courtesy of <a href="https://highlightjs.org/usage/">highlight.js</a>.</p>
+				</section>
+
+				<section data-auto-animate>
+					<h2 data-id="code-title">With Animations</h2>
+					<pre data-id="code-animation"><code class="hljs javascript" data-trim data-line-numbers="|4,8-11|17|22-24"><script type="text/template">
+						import React, { useState } from 'react';
+
+						function Example() {
+						  const [count, setCount] = useState(0);
+
+						  return (
+						    <div>
+						      <p>You clicked {count} times</p>
+						      <button onClick={() => setCount(count + 1)}>
+						        Click me
+						      </button>
+						    </div>
+						  );
+						}
+
+						function SecondExample() {
+						  const [count, setCount] = useState(0);
+
+						  return (
+						    <div>
+						      <p>You clicked {count} times</p>
+						      <button onClick={() => setCount(count + 1)}>
+						        Click me
+						      </button>
+						    </div>
+						  );
+						}
+					</script></code></pre>
+				</section>
+
+				<section>
+					<h2>Point of View</h2>
+					<p>
+						Press <strong>ESC</strong> to enter the slide overview.
+					</p>
+					<p>
+						Hold down the <strong>alt</strong> key (<strong>ctrl</strong> in Linux) and click on any element to zoom towards it using <a href="http://lab.hakim.se/zoom-js">zoom.js</a>. Click again to zoom back out.
+					</p>
+					<p>
+						(NOTE: Use ctrl + click in Linux.)
+					</p>
+				</section>
+
+				<section data-auto-animate data-auto-animate-easing="cubic-bezier(0.770, 0.000, 0.175, 1.000)">
+					<h2>Auto-Animate</h2>
+					<p>Automatically animate matching elements across slides with <a href="https://revealjs.com/auto-animate/">Auto-Animate</a>.</p>
+					<div class="r-hstack justify-center">
+						<div data-id="box1" style="background: #999; width: 50px; height: 50px; margin: 10px; border-radius: 5px;"></div>
+						<div data-id="box2" style="background: #999; width: 50px; height: 50px; margin: 10px; border-radius: 5px;"></div>
+						<div data-id="box3" style="background: #999; width: 50px; height: 50px; margin: 10px; border-radius: 5px;"></div>
+					</div>
+				</section>
+				<section data-auto-animate data-auto-animate-easing="cubic-bezier(0.770, 0.000, 0.175, 1.000)">
+					<div class="r-hstack justify-center">
+						<div data-id="box1" data-auto-animate-delay="0" style="background: cyan; width: 150px; height: 100px; margin: 10px;"></div>
+						<div data-id="box2" data-auto-animate-delay="0.1" style="background: magenta; width: 150px; height: 100px; margin: 10px;"></div>
+						<div data-id="box3" data-auto-animate-delay="0.2" style="background: yellow; width: 150px; height: 100px; margin: 10px;"></div>
+					</div>
+					<h2 style="margin-top: 20px;">Auto-Animate</h2>
+				</section>
+				<section data-auto-animate data-auto-animate-easing="cubic-bezier(0.770, 0.000, 0.175, 1.000)">
+					<div class="r-stack">
+						<div data-id="box1" style="background: cyan; width: 300px; height: 300px; border-radius: 200px;"></div>
+						<div data-id="box2" style="background: magenta; width: 200px; height: 200px; border-radius: 200px;"></div>
+						<div data-id="box3" style="background: yellow; width: 100px; height: 100px; border-radius: 200px;"></div>
+					</div>
+					<h2 style="margin-top: 20px;">Auto-Animate</h2>
+				</section>
+
+				<section>
+					<h2>Touch Optimized</h2>
+					<p>
+						Presentations look great on touch devices, like mobile phones and tablets. Simply swipe through your slides.
+					</p>
+				</section>
+
+				<section data-markdown>
+					<script type="text/template">
+						## Markdown Support
+
+						Write content using inline or external Markdown.
+						Instructions and more info available in the [docs](https://revealjs.com/markdown/).
+
+						```html []
+						<section data-markdown>
+						  ## Markdown Support
+
+						  Write content using inline or external Markdown.
+						  Instructions and more info available in the [docs](https://revealjs.com/markdown/).
+						</section>
+						```
+					</script>
+				</section>
+
+				<section>
+					<p>Add the <code>r-fit-text</code> class to auto-size text</p>
+					<h2 class="r-fit-text">FIT TEXT</h2>
+				</section>
+
+				<section>
+					<section id="fragments">
+						<h2>Fragments</h2>
+						<p>Hit the next arrow...</p>
+						<p class="fragment">... to step through ...</p>
+						<p><span class="fragment">... a</span> <span class="fragment">fragmented</span> <span class="fragment">slide.</span></p>
+
+						<aside class="notes">
+							This slide has fragments which are also stepped through in the notes window.
+						</aside>
+					</section>
+					<section>
+						<h2>Fragment Styles</h2>
+						<p>There's different types of fragments, like:</p>
+						<p class="fragment grow">grow</p>
+						<p class="fragment shrink">shrink</p>
+						<p class="fragment fade-out">fade-out</p>
+						<p>
+							<span style="display: inline-block;" class="fragment fade-right">fade-right, </span>
+							<span style="display: inline-block;" class="fragment fade-up">up, </span>
+							<span style="display: inline-block;" class="fragment fade-down">down, </span>
+							<span style="display: inline-block;" class="fragment fade-left">left</span>
+						</p>
+						<p class="fragment fade-in-then-out">fade-in-then-out</p>
+						<p class="fragment fade-in-then-semi-out">fade-in-then-semi-out</p>
+						<p>Highlight <span class="fragment highlight-red">red</span> <span class="fragment highlight-blue">blue</span> <span class="fragment highlight-green">green</span></p>
+					</section>
+				</section>
+
+				<section id="transitions">
+					<h2>Transition Styles</h2>
+					<p>
+						You can select from different transitions, like: <br>
+						<a href="?transition=none#/transitions">None</a> -
+						<a href="?transition=fade#/transitions">Fade</a> -
+						<a href="?transition=slide#/transitions">Slide</a> -
+						<a href="?transition=convex#/transitions">Convex</a> -
+						<a href="?transition=concave#/transitions">Concave</a> -
+						<a href="?transition=zoom#/transitions">Zoom</a>
+					</p>
+				</section>
+
+				<section id="themes">
+					<h2>Themes</h2>
+					<p>
+						reveal.js comes with a few themes built in: <br>
+						<!-- Hacks to swap themes after the page has loaded. Not flexible and only intended for the reveal.js demo deck. -->
+						<a href="#" onclick="document.getElementById('theme').setAttribute('href','dist/theme/black.css'); return false;">Black (default)</a> -
+						<a href="#" onclick="document.getElementById('theme').setAttribute('href','dist/theme/white.css'); return false;">White</a> -
+						<a href="#" onclick="document.getElementById('theme').setAttribute('href','dist/theme/league.css'); return false;">League</a> -
+						<a href="#" onclick="document.getElementById('theme').setAttribute('href','dist/theme/sky.css'); return false;">Sky</a> -
+						<a href="#" onclick="document.getElementById('theme').setAttribute('href','dist/theme/beige.css'); return false;">Beige</a> -
+						<a href="#" onclick="document.getElementById('theme').setAttribute('href','dist/theme/simple.css'); return false;">Simple</a> <br>
+						<a href="#" onclick="document.getElementById('theme').setAttribute('href','dist/theme/serif.css'); return false;">Serif</a> -
+						<a href="#" onclick="document.getElementById('theme').setAttribute('href','dist/theme/blood.css'); return false;">Blood</a> -
+						<a href="#" onclick="document.getElementById('theme').setAttribute('href','dist/theme/night.css'); return false;">Night</a> -
+						<a href="#" onclick="document.getElementById('theme').setAttribute('href','dist/theme/moon.css'); return false;">Moon</a> -
+						<a href="#" onclick="document.getElementById('theme').setAttribute('href','dist/theme/solarized.css'); return false;">Solarized</a>
+					</p>
+				</section>
+
+				<section>
+					<section data-background="#dddddd">
+						<h2>Slide Backgrounds</h2>
+						<p>
+							Set <code>data-background="#dddddd"</code> on a slide to change the background color. All CSS color formats are supported.
+						</p>
+						<a href="#" class="navigate-down">
+							<img class="r-frame" style="background: rgba(255,255,255,0.1);" width="178" height="238" data-src="https://static.slid.es/reveal/arrow.png" alt="Down arrow">
+						</a>
+					</section>
+					<section data-background-gradient="linear-gradient(to bottom, #283b95, #17b2c3)">
+						<h2>Gradient Backgrounds</h2>
+						<pre><code class="hljs html wrap">&lt;section data-background-gradient=
+							"linear-gradient(to bottom, #ddd, #191919)"&gt;</code></pre>
+					</section>
+					<section data-background="https://static.slid.es/reveal/image-placeholder.png">
+						<h2>Image Backgrounds</h2>
+						<pre><code class="hljs html">&lt;section data-background="image.png"&gt;</code></pre>
+					</section>
+					<section data-background="https://static.slid.es/reveal/image-placeholder.png" data-background-repeat="repeat" data-background-size="100px">
+						<h2>Tiled Backgrounds</h2>
+						<pre><code class="hljs html" style="word-wrap: break-word;">&lt;section data-background="image.png" data-background-repeat="repeat" data-background-size="100px"&gt;</code></pre>
+					</section>
+					<section data-background-video="https://static.slid.es/site/homepage/v1/homepage-video-editor.mp4" data-background-color="#000000">
+						<div style="background-color: rgba(0, 0, 0, 0.9); color: #fff; padding: 20px;">
+							<h2>Video Backgrounds</h2>
+							<pre><code class="hljs html" style="word-wrap: break-word;">&lt;section data-background-video="video.mp4,video.webm"&gt;</code></pre>
+						</div>
+					</section>
+					<section data-background="http://i.giphy.com/90F8aUepslB84.gif">
+						<h2>... and GIFs!</h2>
+					</section>
+				</section>
+
+				<section data-transition="slide" data-background="#4d7e65" data-background-transition="zoom">
+					<h2>Background Transitions</h2>
+					<p>
+						Different background transitions are available via the backgroundTransition option. This one's called "zoom".
+					</p>
+					<pre><code class="hljs javascript">Reveal.configure({ backgroundTransition: 'zoom' })</code></pre>
+				</section>
+
+				<section data-transition="slide" data-background="#b5533c" data-background-transition="zoom">
+					<h2>Background Transitions</h2>
+					<p>
+						You can override background transitions per-slide.
+					</p>
+					<pre><code class="hljs html" style="word-wrap: break-word;">&lt;section data-background-transition="zoom"&gt;</code></pre>
+				</section>
+
+				<section data-background-iframe="https://hakim.se" data-background-interactive>
+					<div style="position: absolute; width: 40%; right: 0; box-shadow: 0 1px 4px rgba(0,0,0,0.5), 0 5px 25px rgba(0,0,0,0.2); background-color: rgba(0, 0, 0, 0.9); color: #fff; padding: 20px; font-size: 20px; text-align: left;">
+						<h2>Iframe Backgrounds</h2>
+						<p>Since reveal.js runs on the web, you can easily embed other web content. Try interacting with the page in the background.</p>
+					</div>
+				</section>
+
+				<section>
+					<h2>Marvelous List</h2>
+					<ul>
+						<li>No order here</li>
+						<li>Or here</li>
+						<li>Or here</li>
+						<li>Or here</li>
+					</ul>
+				</section>
+
+				<section>
+					<h2>Fantastic Ordered List</h2>
+					<ol>
+						<li>One is smaller than...</li>
+						<li>Two is smaller than...</li>
+						<li>Three!</li>
+					</ol>
+				</section>
+
+				<section>
+					<h2>Tabular Tables</h2>
+					<table>
+						<thead>
+							<tr>
+								<th>Item</th>
+								<th>Value</th>
+								<th>Quantity</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr>
+								<td>Apples</td>
+								<td>$1</td>
+								<td>7</td>
+							</tr>
+							<tr>
+								<td>Lemonade</td>
+								<td>$2</td>
+								<td>18</td>
+							</tr>
+							<tr>
+								<td>Bread</td>
+								<td>$3</td>
+								<td>2</td>
+							</tr>
+						</tbody>
+					</table>
+				</section>
+
+				<section>
+					<h2>Clever Quotes</h2>
+					<p>
+						These guys come in two forms, inline: <q cite="http://searchservervirtualization.techtarget.com/definition/Our-Favorite-Technology-Quotations">The nice thing about standards is that there are so many to choose from</q> and block:
+					</p>
+					<blockquote cite="http://searchservervirtualization.techtarget.com/definition/Our-Favorite-Technology-Quotations">
+						&ldquo;For years there has been a theory that millions of monkeys typing at random on millions of typewriters would
+						reproduce the entire works of Shakespeare. The Internet has proven this theory to be untrue.&rdquo;
+					</blockquote>
+				</section>
+
+				<section>
+					<h2>Intergalactic Interconnections</h2>
+					<p>
+						You can link between slides internally,
+						<a href="#/2/3">like this</a>.
+					</p>
+				</section>
+
+				<section>
+					<h2>Speaker View</h2>
+					<p>There's a <a href="https://revealjs.com/speaker-view/">speaker view</a>. It includes a timer, preview of the upcoming slide as well as your speaker notes.</p>
+					<p>Press the <em>S</em> key to try it out.</p>
+
+					<aside class="notes">
+						Oh hey, these are some notes. They'll be hidden in your presentation, but you can see them if you open the speaker notes window (hit 's' on your keyboard).
+					</aside>
+				</section>
+
+				<section>
+					<h2>Export to PDF</h2>
+					<p>Presentations can be <a href="https://revealjs.com/pdf-export/">exported to PDF</a>, here's an example:</p>
+					<iframe data-src="https://www.slideshare.net/slideshow/embed_code/42840540" width="445" height="355" frameborder="0" marginwidth="0" marginheight="0" scrolling="no" style="border:3px solid #666; margin-bottom:5px; max-width: 100%;" allowfullscreen> </iframe>
+				</section>
+
+				<section>
+					<h2>Global State</h2>
+					<p>
+						Set <code>data-state="something"</code> on a slide and <code>"something"</code>
+						will be added as a class to the document element when the slide is open. This lets you
+						apply broader style changes, like switching the page background.
+					</p>
+				</section>
+
+				<section data-state="customevent">
+					<h2>State Events</h2>
+					<p>
+						Additionally custom events can be triggered on a per slide basis by binding to the <code>data-state</code> name.
+					</p>
+					<pre><code class="javascript" data-trim contenteditable style="font-size: 18px;">
+Reveal.on( 'customevent', function() {
+	console.log( '"customevent" has fired' );
+} );
+					</code></pre>
+				</section>
+
+				<section>
+					<h2>Take a Moment</h2>
+					<p>
+						Press B or . on your keyboard to pause the presentation. This is helpful when you're on stage and want to take distracting slides off the screen.
+					</p>
+				</section>
+
+				<section>
+					<h2>Much more</h2>
+					<ul>
+						<li>Right-to-left support</li>
+						<li><a href="https://revealjs.com/api/">Extensive JavaScript API</a></li>
+						<li><a href="https://revealjs.com/auto-slide/">Auto-progression</a></li>
+						<li><a href="https://revealjs.com/backgrounds/#parallax-background">Parallax backgrounds</a></li>
+						<li><a href="https://revealjs.com/keyboard/">Custom keyboard bindings</a></li>
+					</ul>
+				</section>
+
+				<section style="text-align: left;">
+					<h1>THE END</h1>
+					<p>
+						- <a href="https://slides.com">Try the online editor</a> <br>
+						- <a href="https://github.com/hakimel/reveal.js">Source code &amp; documentation</a>
+					</p>
+				</section>
+*/</style>
+			</div>
+
+		</div>
+
+		<script src="dist/reveal.js"></script>
+		<script src="plugin/zoom/zoom.js"></script>
+		<script src="plugin/notes/notes.js"></script>
+		<script src="plugin/search/search.js"></script>
+		<script src="plugin/markdown/markdown.js"></script>
+		<script src="plugin/highlight/highlight.js"></script>
+		<script>
+
+			// Also available as an ES module, see:
+			// https://revealjs.com/initialization/
+			Reveal.initialize({
+				controls: true,
+				progress: true,
+				center: true,
+				hash: true,
+
+				// Learn about plugins: https://revealjs.com/plugins/
+				plugins: [ RevealZoom, RevealNotes, RevealSearch, RevealMarkdown, RevealHighlight ]
+			});
+
+		</script> 
+	</body>
+</html>
