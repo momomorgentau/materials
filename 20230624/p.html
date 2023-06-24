@@ -1,3 +1,4 @@
+﻿<!-- reveal.jsの環境下でのみスライドの閲覧が可能です-->
 <!doctype html>
 <html lang="jp">
 
@@ -33,7 +34,7 @@
 					<a href="https://revealjs.com">
 					</a>
 					<h3>限界！アルゴリズム　後退解析</h3>
-					<h4>17. June 2023</h4>
+					<h4>24. June 2023</h4>
 					<p>
 						<small>Created by ももも  <a href="https://twitter.com/momomorgentau">@momomorgentau</a></small>
 					</p>
@@ -52,13 +53,251 @@
 
                 <section>
 				    <h2>アジェンダ</h2>
-					<p>背景説明<br>
+					<p>グラフのいろは<br>
+					背景説明<br>
 					問題紹介<br>
 					アルゴリズム説明<br>
 					問題解説<br>
 					おわりに</p>
 				</section>
+				
+				<section>
+				    <h2>グラフのいろは</h2>
+					後退解析の前に、、<br>
+					グラフに関する基本的な説明と実装について<br>
+					説明していきます<br>
+				</section>
+				<section>
+				   <h3>グラフって？</h3>
+				   <font size=6>
+				   〇とーで構成されたやつです。ーじゃなくて→の場合もあります<br>
+				   </font>
+				 	<img src="images/5_0.png" alt="5_0" width="70%" height="70%"/>
+				</section>
+				<section>
+				   <font size=6>
+				   一般的には以下のようなものもグラフと呼ばれます<br>
+				   </font>
 
+				 	<img src="images/5_1.png" alt="5_1" width="70%" height="70%"/>
+				   <br>
+				   <font size=6>
+				   ですが、競技プログラミングの文脈では、<br>先ほどの画像のようなものを指します
+				   </font>
+				</section>
+				<section>
+				    <font size=6>
+					    グラフについて次の3つを抑えていただきたいです<br>
+						といいますか、これだけ分かってれば色々な問題が解けます<br><br>
+						
+						<font size = 8><ul>
+						    <li>グラフの種類<br><br></li>
+						    <li>プログラムの表現方法<br><br></li>
+						    <li>探索方法</li>
+						</font></ul>
+					</font>
+				</section>
+				<section>
+				    <h3>グラフの種類</h3>
+					<font size=6>
+				        木、完全グラフ、スターグラフ、、などなど、<br>
+						あげればキリがありません<br>
+						ですが、本日覚えていただきたいのは次の２つです<br><br>
+					</font>
+					<ul>
+					    <li>無向グラフ<br><br></li>
+					    <li>有向グラフ</li>
+					</ul>
+				</section>
+				<section>
+				    <h3>無向グラフ</h3>
+					<font size=6>
+					    読んで字の如く<br>
+						方<font size=7>向</font>の指定が<font size=7>無</font>い<br>
+						グラフです。ーで繋がっているならどこへでも行けちゃいます<br>
+					</font>
+				 	<img src="images/5_2.png" alt="5_2" width="25%" height="25%"/>
+				</section>
+				<section>
+				    <h3>有向グラフ</h3>
+					<font size=6>
+					    一方でこちらは<br>
+						方<font size=7>向</font>の指定が<font size=7>有</font>る<br>
+						グラフです。一方通行ってやつです。<br>
+					</font>
+				 	<img src="images/5_3.png" alt="5_3" width="25%" height="25%"/>
+				</section>
+				<section>
+				    <h3>グラフの例</h3>
+					<font size=6>
+                        こんな感じでグラフは使われます
+					</font>
+				 	<img src="images/5_4.png" alt="5_4" width="70%" height="70%"/>
+				</section>
+				<section>
+				    <h3>プログラムの表現方法</h3>
+					<font size=6>
+					    グラフをプログラムで表現する方法は主に２つです<br><br>
+					</font>
+					<ul>
+						    <li>隣接行列<br><br></li>
+							    
+							<li>隣接リスト<br></li>
+					</ul>
+				</section>
+				<section>
+				    <h4>隣接行列</h4>
+					<font size=6>
+					    各頂点間の辺の情報を２次元配列で表したもの
+					</font>
+				 	<img src="images/5_5.png" alt="5_5" width="70%" height="70%"/>
+				</section>
+				<section>
+				    <h4>隣接リスト</h4>
+					<font size=6>
+					    頂点ごとに辺の情報をまとめた配列
+					</font>
+				 	<img src="images/5_6.png" alt="5_6" width="70%" height="70%"/>
+				</section>
+				<section>
+				<h4>隣接行列・隣接リストの実装</h4>
+				
+					<ul>
+						<li><a href="https://github.com/momomorgentau/materials/blob/main/20230624/graph.cpp">C++</a></li>
+						<li><a href="https://github.com/momomorgentau/materials/blob/main/20230624/graph.py">python</a></li>
+					</ul>
+				</section>
+				<section>
+				    <h4>隣接行列 vs. 隣接リスト</h4>
+					<font size=6>
+						圧倒的に <font size=8>隣接リスト</font> の使用頻度の方が多いです<br><br>
+						<ul>
+						<li>少ない情報で管理可能</li>
+						隣接行列   頂点数 * 頂点数 を管理する<br>
+						隣接リスト 辺の数分管理する<br><br>
+
+						頂点数 5 * 10<sup>5</sup> の問題が多いため<br>
+						これを2乗するととんでもない数になってしまいます
+						</ul>
+					</font>
+				</section>
+				<section>
+				    <h3>探索方法</h3>
+					<font size=6>
+					    隣接リストにて作成したグラフを探索していきます<br>
+						探索は主に次の２つの作業の繰返しで  <font size=4>概ね</font>  大丈夫です
+					</font>
+					<br><br>
+					<ul>
+					    <li>起点となる頂点を決定する<br></li>
+						<br>
+						<li>起点に繋がっている頂点に対して処理を行う</li>
+					</ul>
+				</section>
+				<section>
+				    <font size=6>先ほどのグラフで考えます</font>
+				 	<img src="images/5_7.png" alt="5_7" width="70%" height="70%"/>
+				    <br>
+					<font size=6>開始点は適当に 0 としておきましょう<br>
+					これで起点の頂点が決まりました<br>
+					</font>
+				</section>
+				<section>
+				    <font size=6>起点に繋がっている頂点を見ていきましょう<br></font>
+				 	<img src="images/5_8.png" alt="5_8" width="70%" height="70%"/>
+				</section>
+				<section>
+				    <font size=6>プログラムでは以下のように表現されます</font>
+					<br>
+					<ul>
+						<li><a href="https://github.com/momomorgentau/materials/blob/main/20230624/graph.cpp">C++</a></li>
+						<li><a href="https://github.com/momomorgentau/materials/blob/main/20230624/graph.py">python</a></li>
+					</ul>
+					<br>
+				    <font size=6>foreach文と言うとピンとくる方がいるかもしれません</font>
+				</section>
+				<section>
+				    <font size=6>
+					    処理が終わったらが次の起点を決めていきます<br>
+						ここでの決め方、タイミングは探索方法によって変わってきます<br>
+						（探索方法によっては開始点の決定にも影響があります）
+					</font>
+				<br>	
+					<ul>
+					    <li>幅優先探索 BFS</li><br>
+						<li>深さ優先探索 DFS</li><br>
+						<li>ダイクストラ法</li><br>
+						などなど
+					</ul>
+				</section>
+				<section>
+				    <h4>幅優先探索 BFS</h4>
+					<font size=6>
+					    こいつは一番シンプルです<br>
+						近いところから順番に探索していきます
+					</font>
+				 	<img src="images/5_9_1.png" alt="5_9_1" width="70%" height="70%"/>
+				</section>
+				<section>
+				 	<img src="images/5_9_2.png" alt="5_9_2" width="70%" height="70%"/>
+				</section>
+				<section>
+				 	<img src="images/5_9_3.png" alt="5_9_3" width="70%" height="70%"/>
+				</section>
+				<section>
+				 	<img src="images/5_9_3.png" alt="5_9_3" width="70%" height="70%"/>
+				</section>
+				<section>
+				    <h4>深さ優先探索 DFS</h4>
+					<font size=6>
+					    こいつは少し実装に癖があります（個人の感想）<br>
+						とにかく先へ先へと探索していきます
+					</font>
+				</section>
+				<section>
+				 	<img src="images/5_10.png" alt="5_10" width="70%" height="70%"/>
+				</section>
+				<section>
+				    <h4>ダイクストラ法</h4>
+					<font size=6>
+					    頂点間の最短経路に良く用いられるアルゴリズムです<br>
+						現時点でコストが最小のものを起点にします<br>
+						このとき繋がっていない頂点が次の起点になることもあります
+						<br><br>
+					</font>
+					図略
+				</section>
+				<section>
+				    <font size=6>
+					    以上の方法により
+						<font size=6>最短経路</font> や <font size=6>各種コスト</font>
+						を計算していきます<br><br>
+						いくつか例題を掲載しておきます<br><br>
+						<ul>
+						    <li><a href="https://atcoder.jp/contests/past202005-open/tasks/past202005_e">
+							スプリンクラー（第3回 アルゴリズム実技検定 E問題）
+							</a><br>
+						    <font size=5>
+							繋がっている頂点に対する操作を行います。まずはこの問題から
+							</font>
+							</li>
+						    <li><a href="https://atcoder.jp/contests/abc204/tasks/abc204_c">
+							Tour （ABC 204 C問題）
+							</a><br>
+							<font size=5>
+						    計算量改善等が不要な純粋なグラフ探索です。BFS DFSの練習にどうぞ
+							</font>
+							</li>
+
+						</ul>
+					</font>
+				</section>
+				<section>
+				    <font size=6>
+					    以上でグラフの説明はおしまいです<br>
+						ちなみに後退解析はまた別の探索方法になりますのでお楽しみに
+					</font>
+				</section>
 				<section>
 				    <h2>背景説明</h2>
 					<p>まずはアルゴリズムの説明を始める前に<br>近年耳にしない日はない<br><font size=10>AI</font><br>に関して
@@ -453,6 +692,18 @@
 				 	<img src="images/1_5.png" alt="0_0" width="50%" height="50%"/>
 				</section>
 				<section>
+				    <h4>探索順について</h4>
+					<font size=6>
+					    グラフの説明で探索順について話しました<br>
+						後退解析の探索順は以下の通りです<br>
+						</br>
+						</font>
+						<ul>
+						    <li>選択の余地が無くなってしまった頂点:負け</li>
+						    <li>負けの頂点に移動できる頂点：勝ち</li>
+						</ul>
+				</section>
+				<section>
 				    <p>
 						各状態の<br>「勝ち」「負け」「引き分け」<br>を求めることができました。
 					</p>
@@ -542,8 +793,8 @@
 				<section>
 				    実装<br>
 					<ul>
-						<li><a href="https://github.com/momomorgentau/materials/blob/main/20230617/abc206e.cpp">C++</a></li>
-						<li><a href="https://github.com/momomorgentau/materials/blob/main/20230617/abc206e.py">python</a></li>
+						<li><a href="https://github.com/momomorgentau/materials/blob/main/20230624/abc206e.cpp">C++</a></li>
+						<li><a href="https://github.com/momomorgentau/materials/blob/main/20230624/abc206e.py">python</a></li>
 					</ul>
 				</section>
                 <section>
@@ -596,11 +847,21 @@
 				</section>
 				<section>
 					<h3>参考</h3>
-					<font size=10><a href="https://qiita.com/drken/items/4e1bcf8413af16cb62da">ゲームを解く！Educational DP Contest K, L 問題の解説</a>
+					<font size=6><a href="https://www.amazon.co.jp/%E3%82%A2%E3%83%AB%E3%82%B4%E3%83%AA%E3%82%BA%E3%83%A0%E5%AE%9F%E6%8A%80%E6%A4%9C%E5%AE%9A-%E5%85%AC%E5%BC%8F%E3%83%86%E3%82%AD%E3%82%B9%E3%83%88-%E3%82%A8%E3%83%B3%E3%83%88%E3%83%AA%E3%83%BC-%E4%B8%AD%E7%B4%9A%E7%B7%A8-Compass-Books%E3%82%B7%E3%83%AA%E3%83%BC%E3%82%BA/dp/483997277X">アルゴリズム実技検定 公式テキスト[エントリー~中級編]</a>
+					</font><br>
+					<font size=5>
+					（amazonのリンクです！購入してもぼくには一銭も入らないのでご安心ください）<br>
+					PAST本と呼ばれているやつです。グラフの説明はこちらを参考にしています。<br>
+					サンプルコードはpythonですので、C++erはむしろ良い練習になるかもです。
+					</font>
+					<br><br>
+					<font size=6><a href="https://qiita.com/drken/items/4e1bcf8413af16cb62da">ゲームを解く！Educational DP Contest K, L 問題の解説</a>
+					</font>
+					<font size=5><br>
+					けんちょさんの記事です。類題はこちらに載っております<br>
+					いつも大変お世話になっております
 					</font>
 					<br>
-					<font size=6>類題はこちらに載っております</font><br>
-					<font size=6>けんちょんさんいつもお世話になっております</font>
 				</section>
 				<section>
 				    長時間のご清聴ありがとうございました
